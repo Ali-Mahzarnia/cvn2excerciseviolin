@@ -214,7 +214,7 @@ connectivitvals=connectivitvals+t(connectivitvals) #symetric
 nonzeroposition=which(connectivityexample=="nonzero", arr.ind=TRUE)
 getwd()
 filename=paste(getwd(), "/", "valandpos.mat", sep = "")
-writeMat(filename, nonzeroposition = nonzeroposition, connectivitvals = connectivitvals , oddzeroposition=indexofzeros)
+#writeMat(filename, nonzeroposition = nonzeroposition, connectivitvals = connectivitvals , oddzeroposition=indexofzeros)
 
 
 
@@ -283,7 +283,12 @@ for (i in 1:length(subnetsresults)){
 }
 
 
-#### histograms of nets
+# install.packages("vioplot")
+library("vioplot")
+
+
+
+### histograms of nets
 histdata=matrix(0,length(subnetsresults),dim(connectivity)[3])
 #t
 
@@ -298,18 +303,42 @@ for (j in 1:length(subnetsresults)){
   }
 }
 }
-histdata=cbind(seq(1,length(subnetsresults)),histdata)
+# histdata=cbind(seq(1,length(subnetsresults)),histdata)
 
 
-# install.packages("vioplot")
-library("vioplot")
 
-vioplot(histdata[,2:dim(histdata)[2]]  ~ histdata[,1], col = 2:length(levels(data$feed)),
-        xlab = "Feed", ylab = "Weight")
-stripchart(histdata[,2:dim(histdata)[2]] ~ histdata[,1], vertical = TRUE, method = "jitter",
-           pch = 19, add = TRUE, col = 3:10)
+##split plots.
+histdatasplit=histdata[,2:dim(histdata)[2]]
+tread=histdatasplit[,riskfactors==1] #treadmill
+wheel=histdatasplit[,riskfactors==2] # wheel
 
 
+vioplot(tread~ histdata[,1] , side = "left", plotCentre = "line", col = 2,  xlab = "Feed", ylab = "weights")
+stripchart(tread~ histdata[,1], vertical = TRUE, method = "jitter",
+           pch = 1, add = TRUE, col = 1)
+vioplot(wheel~ histdata[,1], side = "right", plotCentre = "line", col = 3, add = TRUE)
+stripchart(tread~ histdata[,1], vertical = TRUE, method = "jitter",
+           pch = 2, add = TRUE, col = 6)
+
+legend("topleft", legend = c("Treadmill-squares", "Wheel- triangle"), fill = c(2, 3), cex = 0.75)
+
+
+
+
+
+
+
+
+# 
+# vioplot(histdata[,2:dim(histdata)[2]]  ~ histdata[,1], col = 2:length(levels(data$feed)),
+#         xlab = "Feed", ylab = "Weight")
+# stripchart(histdata[,2:dim(histdata)[2]] ~ histdata[,1], vertical = TRUE, method = "jitter",
+#            pch = 19, add = TRUE, col = 3:10)
+# 
+
+
+
+# 
 #### histograms of nets with weights
 histdata=matrix(0,length(subnetsresults),dim(connectivity)[3])
 #t
@@ -328,8 +357,27 @@ for (j in 1:length(subnetsresults)){
 }
 histdata=cbind(seq(1,length(subnetsresults)),histdata)
 
-vioplot(histdata[,2:dim(histdata)[2]]  ~ histdata[,1], col = 2:length(levels(data$feed)),
-        xlab = "Feed", ylab = "Weight")
-stripchart(histdata[,2:dim(histdata)[2]] ~ histdata[,1], vertical = TRUE, method = "jitter",
-           pch = 19, add = TRUE, col = 3:10)
+# vioplot(histdata[,2:dim(histdata)[2]]  ~ histdata[,1], col = 2:length(levels(data$feed)),
+#         xlab = "Feed", ylab = "Projected weights")
+# 
+# stripchart(histdata[,2:dim(histdata)[2]] ~ histdata[,1], vertical = TRUE, method = "jitter",
+#            pch = 19, add = TRUE, col = 3:10)
+
+##split plots.
+histdatasplit=histdata[,2:dim(histdata)[2]]
+tread=histdatasplit[,riskfactors==1] #treadmill
+wheel=histdatasplit[,riskfactors==2] # wheel
+
+
+vioplot(tread~ histdata[,1] , side = "left", plotCentre = "line", col = 2,  xlab = "Feed", ylab = "weights")
+stripchart(tread~ histdata[,1], vertical = TRUE, method = "jitter",
+           pch = 1, add = TRUE, col = 1)
+vioplot(wheel~ histdata[,1], side = "right", plotCentre = "line", col = 3, add = TRUE)
+stripchart(tread~ histdata[,1], vertical = TRUE, method = "jitter",
+           pch = 2, add = TRUE, col = 6)
+
+legend("topleft", legend = c("Treadmill-squares", "Wheel- triangle"), fill = c(2, 3), cex = 0.75)
+
+
+
 
