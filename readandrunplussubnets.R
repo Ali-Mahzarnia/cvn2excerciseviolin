@@ -5,9 +5,9 @@ library(R.matlab)
 path="/Users/ali/Desktop/mar/mice/cvn/resultsconnectivity_all_ADDecode_Dipy.mat"
 path2="/Users/ali/Desktop/mar/mice/cvn/resultsresponse_array.mat"
 
-
 data=readMat(path)
 connectivity=data$connectivity
+temp=connectivity[,,1]
 
 noreadcsf=c(148,152,161,314,318,327) # dont read csf
 
@@ -24,7 +24,6 @@ response=data2$response.array
 riskfactors=matrix(NA,  dim(response)[1], (dim(response)[2]-1))
 #sum(riskfactors[,2]==3)
 
-
 subjnameofconnectivity=data$subjlist
 
 for (i in 1:dim(riskfactors)[1]) {
@@ -35,20 +34,19 @@ for (i in 1:dim(riskfactors)[1]) {
 
 
 #riskfactorind=riskfactors[,4]<2
-riskfactorind=riskfactors>0
-sum(riskfactorind)
-riskfactors=riskfactors[riskfactorind,] # removing riskfactor 2,3
+#sum(riskfactorind)
+#riskfactors=riskfactors[riskfactorind,] # removing riskfactor 2,3
 
 
-image=matrix(NA,  dim(connectivity)[3], len) # -6 becasue of cfs removal
+image=matrix(NA,  dim(connectivity)[3], len)
 
-for (i in 1:dim(connectivity)[3]){
+for (i in 1:dim(connectivity)[3]) {
   temp=connectivity[-noreadcsf,-noreadcsf,i]
   indexlower=lower.tri(temp, diag=FALSE)
   temp=temp[indexlower]
 image[i,]=temp
 }
-image=image[riskfactorind,]
+#image=image[riskfactorind,]
 
 #recordzerocols
 indd=0
@@ -59,7 +57,7 @@ image=image[,-indd]
 
 
 
-#riskfactors=riskfactors[,c(1,3)]
+riskfactors=riskfactors[,c(1)]
 #image=t(image);
 #riskfactors=t(riskfactors);
 
@@ -83,7 +81,8 @@ library(glmnet)
 #out=cv.glmnet(x=image,y=riskfactors, family = "multinomial")
 out=cv.glmnet(x=image,y=riskfactors,  family = "binomial", type.measure = "class")
 print(out)
-plot(out)
+#jpeg("cross") ; plot(out);dev.off()
+
 coef=coef(out, s = "lambda.min")
 coef=coef
 sum(coef!=0)
@@ -188,11 +187,11 @@ l <- layout_with_fr(t.graph, minx=minC, maxx=maxC,
 pathnames='/Users/ali/Desktop/mar/mice/mouse_anatomy.csv'
 datanmes=read.csv(pathnames, header = TRUE, sep = ",", quote = "")
 datanmes=datanmes[-noreadcsf]
- datanmess=datanmes$ROI[-noreadcsf] # remove csf
+datanmess=datanmes$ROI[-noreadcsf] # remove csf
 
- par(mfrow=c(1,1))
- 
-#set.vertex.attribute(t.graph, "name", value=datanmes$ROI   )
+par(mfrow=c(1,1))
+
+#jpeg("nets", units="in", width=10, height=5, res=300)  
 plot(t.graph, layout=l, 
      rescale=T,
      asp=0,
@@ -207,6 +206,7 @@ plot(t.graph, layout=l,
      vertex.label.color="black", 
      #edge.color=E(t.graph)$color, ##do not need this since E(t.graph)$color is already defined.
      edge.width=as.integer(cut(abs(E(t.graph)$V3), breaks = 5)))
+#dev.off()
 
 connectivitvals=connectivitvals+t(connectivitvals) #symetric
 
@@ -296,33 +296,59 @@ for (j in 1:length(subnetsresults)){
   net=subnetsresults[[j]]
   subnetsuperset=as.numeric(net[1,])
   for (i in 1:dim(t)[1])
-  if ( t[i,][1]%in%subnetsuperset){
-  for (k in 1:dim(connectivity)[3]) {
-    temp=connectivity[,,k]
-  histdata[j,k]=histdata[j,k]+ temp[t[i,][1],t[i,][2]]+temp[t[i,][2],t[i,][1]]
-  }
+    if ( t[i,][1]%in%subnetsuperset){
+      for (k in 1:dim(connectivity)[3]) {
+        temp=connectivity[,,k]
+        histdata[j,k]=histdata[j,k]+ temp[t[i,][1],t[i,][2]]+temp[t[i,][2],t[i,][1]]
+      }
+    }
 }
-}
-# histdata=cbind(seq(1,length(subnetsresults)),histdata)
+ histdata=cbind(seq(1,length(subnetsresults)),histdata)
 
 
 
+ 
+ #all plots in split
+ 
+ ##split plots.
+ histdatasplit=histdata[,2:dim(histdata)[2]]
+ tread=histdatasplit[,riskfactors==1] #treadmill
+ wheel=histdatasplit[,riskfactors==2] # wheel
+ 
+ 
+ vioplot(tread~ histdata[,1] , side = "left", plotCentre = "line", col = 2,  xlab = "Feed", ylab = "weights")
+ stripchart(tread~ histdata[,1], vertical = TRUE, method = "jitter",
+            pch = 1, add = TRUE, col = 1)
+vioplot(wheel~ histdata[,1], side = "right", plotCentre = "line", col = 3, add = TRUE)
+ stripchart(tread~ histdata[,1], vertical = TRUE, method = "jitter",
+          pch = 2, add = TRUE, col = 6)
+ 
+legend("topleft", legend = c("Seddentray-squares", "nonsedentary- triangle", fill = c(2, 3), cex = 0.75)
+  
+ 
 ##split plots.
 histdatasplit=histdata[,2:dim(histdata)[2]]
-tread=histdatasplit[,riskfactors==1] #treadmill
-wheel=histdatasplit[,riskfactors==2] # wheel
+
+sed=histdatasplit[,riskfactors==1] #sed
+nonsed=histdatasplit[,riskfactors==2] # nonsed 
 
 
-vioplot(tread~ histdata[,1] , side = "left", plotCentre = "line", col = 2,  xlab = "Feed", ylab = "weights")
-stripchart(tread~ histdata[,1], vertical = TRUE, method = "jitter",
+par(mfrow=c(2,ceiling(dim(histdata)[1])/2))
+#par(mfrow=c(3,ceiling(dim(histdata)[1])/3))
+#jpeg("violins1", units="in", width=10, height=5, res=300)
+#tiff("violins1", units="in", width=10, height=5, res=300)
+#pdf("violins1")
+for (j in 1:length(subnetsresults)){
+  
+vioplot(nonsed[j,], side = "right", plotCentre = "line", col = 3, ylab="net weight" ,xlab = paste0("Net ",j, '\n', 'networks medians difference:', '\n' , abs(median(nonsed[j,])-median(sed[j,])) ))
+stripchart(sed[j,], vertical = TRUE, method = "jitter",
+           pch = 2, add = TRUE, col = 6,  xlab = "Feed", ylab = "weights")
+vioplot(sed[j,] , side = "left", plotCentre = "line", col = 2, add = TRUE)
+stripchart(sed[j,], vertical = TRUE, method = "jitter",
            pch = 1, add = TRUE, col = 1)
-vioplot(wheel~ histdata[,1], side = "right", plotCentre = "line", col = 3, add = TRUE)
-stripchart(tread~ histdata[,1], vertical = TRUE, method = "jitter",
-           pch = 2, add = TRUE, col = 6)
-
-legend("topleft", legend = c("Treadmill-squares", "Wheel- triangle"), fill = c(2, 3), cex = 0.75)
-
-
+legend("topleft", legend = c("sedentary-circle", "nonsedentary-triangle"   ), fill = c(2, 3), cex = 0.55)
+}
+#dev.off()
 
 
 
@@ -363,21 +389,30 @@ histdata=cbind(seq(1,length(subnetsresults)),histdata)
 # stripchart(histdata[,2:dim(histdata)[2]] ~ histdata[,1], vertical = TRUE, method = "jitter",
 #            pch = 19, add = TRUE, col = 3:10)
 
+#split plots all in 1.
+
 ##split plots.
 histdatasplit=histdata[,2:dim(histdata)[2]]
-tread=histdatasplit[,riskfactors==1] #treadmill
-wheel=histdatasplit[,riskfactors==2] # wheel
+
+sed=histdatasplit[,riskfactors==1] #sed
+nonsed=histdatasplit[,riskfactors==2] # nonsed 
 
 
-vioplot(tread~ histdata[,1] , side = "left", plotCentre = "line", col = 2,  xlab = "Feed", ylab = "weights")
-stripchart(tread~ histdata[,1], vertical = TRUE, method = "jitter",
-           pch = 1, add = TRUE, col = 1)
-vioplot(wheel~ histdata[,1], side = "right", plotCentre = "line", col = 3, add = TRUE)
-stripchart(tread~ histdata[,1], vertical = TRUE, method = "jitter",
-           pch = 2, add = TRUE, col = 6)
-
-legend("topleft", legend = c("Treadmill-squares", "Wheel- triangle"), fill = c(2, 3), cex = 0.75)
-
-
+par(mfrow=c(2,ceiling(dim(histdata)[1])/2))
+#par(mfrow=c(3,ceiling(dim(histdata)[1])/3))
+#jpeg("violins1", units="in", width=10, height=5, res=300)
+#tiff("violins1", units="in", width=10, height=5, res=300)
+#pdf("violins1")
+for (j in 1:length(subnetsresults)){
+  
+  vioplot(nonsed[j,], side = "right", plotCentre = "line", col = 3, ylab="net projected weight" ,xlab = paste0("Net ",j, '\n', 'networks medians difference:', '\n' , abs(median(nonsed[j,])-median(sed[j,])) ))
+  stripchart(sed[j,], vertical = TRUE, method = "jitter",
+             pch = 2, add = TRUE, col = 6,  xlab = "Feed", ylab = "weights")
+  vioplot(sed[j,] , side = "left", plotCentre = "line", col = 2, add = TRUE)
+  stripchart(sed[j,], vertical = TRUE, method = "jitter",
+             pch = 1, add = TRUE, col = 1)
+  legend("topleft", legend = c("sedentary-circle", "nonsedentary-triangle"   ), fill = c(2, 3), cex = 0.55)
+}
+#dev.off()
 
 
