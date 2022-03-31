@@ -234,7 +234,7 @@ for (i in 1:length(subnets)) {
   net[4,]= as.numeric( colsum[temp]   )
   tt=as.numeric(net[1,])
   #tt=c(1,200)
-  indofleftright=tt>=166
+  indofleftright=tt>=164
   net[5,][indofleftright]="Right"
   net[5,][!indofleftright]="Left"
   net[6,]=sum(as.numeric(net[4,]))
