@@ -234,7 +234,7 @@ for (i in 1:length(subnets)) {
   net[4,]= as.numeric( colsum[temp]   )
   tt=as.numeric(net[1,])
   #tt=c(1,200)
-  indofleftright=tt>=166
+  indofleftright=tt>=164
   net[5,][indofleftright]="Right"
   net[5,][!indofleftright]="Left"
   net[6,]=sum(as.numeric(net[4,]))
@@ -445,6 +445,6 @@ for (j in 1:length(subnetsresults)){
   vioplot(histdatasplit[j,]~ GenoTypes , plotCentre = "dot", col =c(rgb(1,0,0, alpha = 0.35), rgb(0 ,1  ,0, alpha = 0.35)) ,  ylab="net projected weight" ,main = paste0("Net ",j, ". Medians difference: \n ", round(median(histdatasplit[j,GenoTypes=="Sedentary"])-median(histdatasplit[j,GenoTypes=="Non-Sedentary"]),digits = 5) ))
   stripchart(histdatasplit[j,]~GenoTypes, vertical = TRUE, method = "jitter",
              pch = 1:2, add = TRUE, col = 5:6, offset=0)
-  ablineclip(h=median(histdatasplit[j,GenoTypes=="Sedentary"]), col="red", lwd = 2, x1=0, x2=1, lty="dotted")
-  ablineclip(h=median(histdatasplit[j,GenoTypes=="Non-Sedentary"]), col="green", lwd = 2, x1=0, x2=2, lty="dotted")
+  ablineclip(h=median(histdatasplit[j,GenoTypes=="Non-Sedentary"]), col="red", lwd = 2, x1=0, x2=1, lty="dotted")
+  ablineclip(h=median(histdatasplit[j,GenoTypes=="Sedentary"]), col="green", lwd = 2, x1=0, x2=2, lty="dotted")
 }
